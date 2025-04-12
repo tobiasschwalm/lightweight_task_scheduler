@@ -1,0 +1,17 @@
+{
+    "name": "Devcontainer",
+    "build": { "dockerfile": "Dockerfile" },
+    "features": {},
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash"
+            },
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-vscode.makefile-tools",
+                "jebbs.plantuml"
+            ]
+        }
+    }
+}

@@ -1,0 +1,41 @@
+# Build directories
+/build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Output directories
+/workspaces/scheduler/build/
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Compiled object files
+*.o
+*.obj
+
+# Executables
+*.exe
+*.out
+*.a
+*.so
+*.dll
+*.dylib
+
+# Dependency files
+*.d
+
+# Generated files
+*.generated.*
+
+# System files
+.DS_Store
+Thumbs.db

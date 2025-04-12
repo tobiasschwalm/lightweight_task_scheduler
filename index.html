@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lightweight Task Scheduler (LTS) - A simple and efficient task scheduler implemented in C.">
+    <meta name="author" content="Tobias Schwalm">
+    <title>Lightweight Task Scheduler (LTS)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background: #007acc;
+            color: #fff;
+            padding: 1rem 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        header p {
+            margin: 0.5rem 0 0;
+        }
+        nav {
+            background: #005fa3;
+            padding: 0.5rem 0;
+            text-align: center;
+        }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        main {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        section {
+            margin-bottom: 2rem;
+        }
+        section h2 {
+            color: #007acc;
+            margin-bottom: 1rem;
+        }
+        section ul {
+            list-style-type: square;
+            margin-left: 1.5rem;
+        }
+        .highlight {
+            background-color: #e0f7fa;
+            padding: 0.5rem;
+            border-left: 4px solid #007acc;
+        }
+        pre {
+            background: transparent; /* Removed black background */
+            border-radius: 5px;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        footer {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+        footer a {
+            color: #007acc;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        .scheduler-animation {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 100px;
+            margin: 2rem auto;
+            background: #f4f4f9;
+            border: 2px solid #007acc;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .task {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 5px;
+            animation-timing-function: linear;
+        }
+        .task-1 {
+            background: #007acc;
+            animation: moveTask1 4s infinite;
+        }
+        .task-2 {
+            background: #005fa3;
+            animation: moveTask2 4s infinite;
+        }
+        @keyframes moveTask1 {
+            0% { left: -100px; }
+            25% { left: 25%; }
+            50% { left: 50%; }
+            75% { left: 75%; }
+            100% { left: 100%; }
+        }
+        @keyframes moveTask2 {
+            0% { left: -100px; }
+            12.5% { left: 12.5%; }
+            37.5% { left: 37.5%; }
+            62.5% { left: 62.5%; }
+            87.5% { left: 87.5%; }
+            100% { left: 100%; }
+        }
+        .animation-description {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+        }
+        .uml-sequence-chart {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: #f4f4f9;
+            border: 2px solid #007acc;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .time-label {
+            flex: 1;
+            text-align: center;
+        }
+        .task-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .task-label {
+            width: 80px;
+            font-weight: bold;
+            color: #333;
+        }
+        .task-bar {
+            flex: 1;
+            height: 20px;
+            position: relative;
+            background: transparent;
+        }
+        .task-bar-1::before {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 20%;
+            background: #007acc;
+            animation: task1Animation 4s infinite linear;
+        }
+        .task-bar-2::before {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 20%;
+            background: #005fa3;
+            animation: task2Animation 4s infinite linear;
+        }
+        @keyframes task1Animation {
+            0% { left: 0%; }
+            25% { left: 25%; }
+            50% { left: 50%; }
+            75% { left: 75%; }
+            100% { left: 100%; }
+        }
+        @keyframes task2Animation {
+            0% { left: 12.5%; }
+            25% { left: 37.5%; }
+            50% { left: 62.5%; }
+            75% { left: 87.5%; }
+            100% { left: 100%; }
+        }
+        .uml-sequence-chart {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: #f4f4f9;
+            border: 2px solid #007acc;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .time-label {
+            flex: 1;
+            text-align: center;
+        }
+        .task-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .task-label {
+            width: 80px;
+            font-weight: bold;
+            color: #333;
+        }
+        .task-bar {
+            flex: 1;
+            height: 20px;
+            position: relative;
+            background: transparent;
+        }
+        .task-bar-1::before {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 14.28%; /* Represents 1000ms in a 7000ms cycle */
+            background: #007acc;
+            animation: task1Animation 7s infinite linear;
+        }
+        .task-bar-2::before {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 14.28%; /* Represents 1000ms in a 7000ms cycle */
+            background: #005fa3;
+            animation: task2Animation 7s infinite linear;
+        }
+        @keyframes task1Animation {
+            0% { left: 0%; }
+            14.28% { left: 14.28%; }
+            28.56% { left: 28.56%; }
+            42.84% { left: 42.84%; }
+            57.12% { left: 57.12%; }
+            71.4% { left: 71.4%; }
+            85.68% { left: 85.68%; }
+            100% { left: 100%; }
+        }
+        @keyframes task2Animation {
+            0% { left: 7.14%; } /* Starts at 500ms offset */
+            14.28% { left: 21.42%; }
+            28.56% { left: 35.7%; }
+            42.84% { left: 50%; }
+            57.12% { left: 64.28%; }
+            71.4% { left: 78.56%; }
+            85.68% { left: 92.84%; }
+            100% { left: 107.14%; }
+        }
+        .uml-sequence-chart {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: linear-gradient(135deg, #e3f2fd, #f4f4f9);
+            border: 3px solid #007acc;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #333;
+            font-weight: bold;
+        }
+        .time-label {
+            flex: 1;
+            text-align: center;
+        }
+        .task-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .task-label {
+            width: 100px;
+            font-weight: bold;
+            color: #007acc;
+            text-align: right;
+            margin-right: 10px;
+        }
+        .task-bar {
+            flex: 1;
+            height: 20px;
+            position: relative;
+            background: #e0f7fa;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .task-bar-1::before {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 14.28%; /* Represents 1000ms in a 7000ms cycle */
+            background: #007acc;
+            animation: task1Animation 7s infinite linear;
+            border-radius: 10px;
+        }
+        .task-bar-2::before {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 14.28%; /* Represents 1000ms in a 7000ms cycle */
+            background: #005fa3;
+            animation: task2Animation 7s infinite linear;
+            border-radius: 10px;
+        }
+        @keyframes task1Animation {
+            0% { left: 0%; }
+            14.28% { left: 14.28%; }
+            28.56% { left: 28.56%; }
+            42.84% { left: 42.84%; }
+            57.12% { left: 57.12%; }
+            71.4% { left: 71.4%; }
+            85.68% { left: 85.68%; }
+            100% { left: 100%; }
+        }
+        @keyframes task2Animation {
+            0% { left: 7.14%; } /* Starts at 500ms offset */
+            14.28% { left: 21.42%; }
+            28.56% { left: 35.7%; }
+            42.84% { left: 50%; }
+            57.12% { left: 64.28%; }
+            71.4% { left: 78.56%; }
+            85.68% { left: 92.84%; }
+            100% { left: 107.14%; }
+        }
+        .animation-description {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+            margin-top: 1rem;
+        }
+        .task-pulse {
+            flex: 1;
+            height: 20px;
+            position: relative;
+            background: #e0f7fa;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .task-pulse::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: #007acc;
+            border-radius: 50%;
+            opacity: 0;
+            animation: pulseTask1 3s infinite;
+        }
+        .task-pulse-2::before {
+            background: #005fa3;
+            animation: pulseTask2 3s infinite;
+        }
+        @keyframes pulseTask1 {
+            0%, 100% { opacity: 0; transform: scale(0.8); }
+            10% { opacity: 1; transform: scale(1.2); }
+        }
+        @keyframes pulseTask2 {
+            0%, 100% { opacity: 0; transform: scale(0.8); }
+            25% { opacity: 1; transform: scale(1.2); }
+        }
+        .task-events {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+        .event {
+            width: 20px;
+            height: 20px;
+            background: #007acc;
+            border-radius: 50%;
+            opacity: 0;
+            animation: fadeIn 3s infinite;
+        }
+        .event-2 {
+            background: #005fa3;
+        }
+        .offset {
+            animation-delay: 0.5s;
+        }
+        @keyframes fadeIn {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        .task-markers {
+            flex: 1;
+            position: relative;
+            height: 20px;
+            background: #e0f7fa;
+            border-radius: 10px;
+        }
+        .marker {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: #007acc;
+            border-radius: 50%;
+        }
+        .task-row:nth-child(2) .marker {
+            background: #005fa3;
+        }
+        .marker {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%) scale(0);
+            width: 10px;
+            height: 10px;
+            background: #007acc;
+            border-radius: 50%;
+            animation: markerAnimation 6s infinite;
+        }
+        .marker-2 {
+            background: #005fa3;
+        }
+        @keyframes markerAnimation {
+            0%, 100% {
+                transform: translateY(-50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(-50%) scale(1);
+                opacity: 1;
+            }
+        }
+        .console-simulation {
+            width: 100%;
+            max-width: 700px;
+            margin: 2rem auto;
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .console-header {
+            background: #333;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            font-weight: bold;
+            border-bottom: 2px solid #007acc;
+        }
+        .console-body {
+            padding: 1rem;
+            height: 150px;
+            overflow-y: auto;
+        }
+        .console-line {
+            opacity: 0;
+            animation: fadeInConsole 4s infinite;
+            animation-fill-mode: forwards;
+        }
+        @keyframes fadeInConsole {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+        .simulation-description {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Lightweight Task Scheduler (LTS)</h1>
+        <p>Efficient, standards-compliant, and optimized for embedded systems</p>
+    </header>
+    <nav>
+        <a href="#features">Features</a>
+        <a href="#examples">Examples</a>
+        <a href="#license">License</a>
+        <a href="#contributing">Contributing</a>
+    </nav>
+    <main>
+        <section id="features">
+    <h2>Why Choose LTS?</h2>
+    <p class="highlight">The Lightweight Task Scheduler (LTS) is built with embedded systems in mind, offering:</p>
+    <ul>
+        <li><strong>ISO C99 Compliance:</strong> Fully compliant with the ISO/IEC 9899:1999 standard, ensuring maximum compatibility and portability across platforms.</li>
+        <li><strong>Portability:</strong> Easily integrates into any C-based project, regardless of platform.</li>
+        <li><strong>Lightweight Design:</strong> Minimal memory footprint, perfect for resource-constrained devices.</li>
+        <li><strong>Reliability:</strong> Designed for critical real-time applications.</li>
+        <li><strong>Customizable:</strong> Flexible task scheduling to meet your specific needs.</li>
+    </ul>
+    <p>
+        The scheduler is optimized for embedded systems, using static memory allocation to ensure predictable resource usage. For example, with 10 tasks, the total memory usage is approximately 185 bytes, making it ideal for microcontrollers with limited RAM.
+    </p>
+</section>
+        <section id="examples">
+    <h2>Code Examples: Using the Scheduler API</h2>
+
+    <h3>Example 1: Periodic Task Execution</h3>
+    <pre><code class="language-c">
+#include "scheduler.h"
+#include "stdio.h"
+
+/* Task function 1 */
+void periodic_task_1(void)
+{
+    printf("Periodic task 1 executed!\n");
+}
+
+/* Task function 2 */
+void periodic_task_2(void)
+{
+    printf("Periodic task 2 executed!\n");
+}
+
+int main(void)
+{
+    SchedulerContext ctx = {0};
+
+     /* Executes every 1000 ms */
+    create_task(&ctx, periodic_task_1, 1000, 0);
+
+    /* Executes every 2000 ms and offset 500 ms */
+    create_task(&ctx, periodic_task_2, 2000, 500); 
+
+    /* Create and start the scheduler */
+    start_scheduler(&ctx);
+
+    return 0;
+}
+</code></pre>
+<div class="console-simulation">
+    <div class="console-header">
+        Simulated Console Output
+        <button class="restart-button" onclick="restartAnimation(this)">Restart</button>
+    </div>
+    <div class="console-body">
+        <div class="console-line" style="animation-delay: 0s;">[0 ms] Periodic task 1 executed!</div>
+        <div class="console-line" style="animation-delay: 0.5s;">[500 ms] Periodic task 2 executed!</div>
+        <div class="console-line" style="animation-delay: 1s;">[1000 ms] Periodic task 1 executed!</div>
+        <div class="console-line" style="animation-delay: 2s;">[2000 ms] Periodic task 1 executed!</div>
+        <div class="console-line" style="animation-delay: 2.5s;">[2500 ms] Periodic task 2 executed!</div>
+        <div class="console-line" style="animation-delay: 3s;">[3000 ms] Periodic task 1 executed!</div>
+        <div class="console-line" style="animation-delay: 4s;">[4000 ms] Periodic task 1 executed!</div>
+        <div class="console-line" style="animation-delay: 4.5s;">[4500 ms] Periodic task 2 executed!</div>
+    </div>
+</div>
+
+    <pre><code class="language-c">
+#include "scheduler.h"
+#include "stdio.h"
+
+/* Task function */
+void one_time_task(void)
+{
+    printf("One-time task executed!\n");
+}
+
+int main(void)
+{
+    SchedulerContext ctx = {0};
+
+    /* Create a one-time task */
+    create_task(&ctx, one_time_task, 0, 2000); /* Executes once after 2000 ms */
+    start_scheduler(&ctx);
+
+    return 0;
+}
+    </code></pre>
+    <div class="console-simulation">
+        <div class="console-header">
+            Simulated Console Output
+            <button class="restart-button" onclick="restartAnimation(this)">Restart</button>
+        </div>
+        <div class="console-body">
+            <div class="console-line" style="animation-delay: 2s;">[2000 ms] One-time task executed!</div>
+        </div>
+    </div>
+
+    <h3>Example 3: Stopping the Scheduler</h3>
+    <pre><code class="language-c">
+#include "scheduler.h"
+#include "stdio.h"
+
+static SchedulerContext ctx = {0};
+
+/* Task function */
+void periodic_task(void)
+{
+    printf("Periodic task executed!\n");
+}
+
+/* Stop task */
+void stop_scheduler_task(void)
+{
+    static int iteration_count = 0;
+
+    if (++iteration_count >= 5)
+    {
+        printf("Stopping scheduler after 5 iterations.\n");
+        stop_scheduler(&ctx);
+    }
+}
+
+int main(void)
+{
+    create_task(&ctx, periodic_task, 1000, 0);
+    create_task(&ctx, stop_scheduler_task, 1000, 0);
+    start_scheduler(&ctx);
+
+    return 0;
+}
+    </code></pre>
+    <div class="console-simulation">
+        <div class="console-header">
+            Simulated Console Output
+            <button class="restart-button" onclick="restartAnimation(this)">Restart</button>
+        </div>
+        <div class="console-body">
+            <div class="console-line" style="animation-delay: 0s;">[0 ms] Periodic task executed!</div>
+            <div class="console-line" style="animation-delay: 1s;">[1000 ms] Periodic task executed!</div>
+            <div class="console-line" style="animation-delay: 2s;">[2000 ms] Periodic task executed!</div>
+            <div class="console-line" style="animation-delay: 3s;">[3000 ms] Periodic task executed!</div>
+            <div class="console-line" style="animation-delay: 4s;">[4000 ms] Periodic task executed!</div>
+            <div class="console-line" style="animation-delay: 5s;">[5000 ms] Stopping scheduler after 5 iterations.</div>
+        </div>
+    </div>
+
+    <h3>Example 4: Stopping a Task</h3>
+    <pre><code class="language-c">
+#include "scheduler.h"
+#include "stdio.h"
+
+SchedulerContext ctx = {0};
+task_id_t periodic_task_id;
+
+/* Task function */
+void periodic_task(void)
+{
+    printf("Periodic task executed!\n");
+}
+
+/* One-time task to stop the periodic task */
+void stop_task_once(void)
+{
+    printf("Stopping periodic task.\n");
+    stop_task(&ctx, periodic_task_id); /* Stop the periodic task */
+}
+
+int main(void)
+{
+    /* Create the periodic task */
+    periodic_task_id = create_task(&ctx, periodic_task, 1000, 0); /* Executes every 1000 ms */
+
+    /* Create a one-time task to stop the periodic task after 3000 ms */
+    create_task(&ctx, stop_task_once, 0, 3000); /* Executes once after 3000 ms */
+
+    /* Start the scheduler */
+    start_scheduler(&ctx);
+
+    return 0;
+}
+    </code></pre>
+    <div class="console-simulation">
+        <div class="console-header">
+            Simulated Console Output
+            <button class="restart-button" onclick="restartAnimation(this)">Restart</button>
+        </div>
+        <div class="console-body">
+            <div class="console-line" style="animation-delay: 0s;">[0 ms] Periodic task executed!</div>
+            <div class="console-line" style="animation-delay: 1s;">[1000 ms] Periodic task executed!</div>
+            <div class="console-line" style="animation-delay: 2s;">[2000 ms] Periodic task executed!</div>
+            <div class="console-line" style="animation-delay: 3s;">[3000 ms] Stopping periodic task.</div>
+        </div>
+    </div>
+
+        <section id="platform-abstraction">
+            <h2>Platform Abstraction</h2>
+            <p class="highlight">
+                LTS is designed to work seamlessly across different platforms. By abstracting platform-specific functions like time management, you can easily adapt LTS to your target environment.
+            </p>
+            <ul>
+                <li><strong>POSIX Systems:</strong> Uses <code>clock_gettime</code> and <code>usleep</code> for time management.</li>
+                <li><strong>Microcontroller Platforms:</strong> Compatible with hardware timers and delay functions like <code>HAL_GetTick</code> and <code>HAL_Delay</code> (e.g., STM32).</li>
+                <li><strong>Custom Platforms:</strong> Provide your own implementation of <code>current_time_ms</code> and <code>sleep_ms</code>.</li>
+            </ul>
+            <p>
+                This flexibility ensures that LTS can be integrated into any system with minimal effort, making it a truly portable solution.
+            </p>
+        </section>
+        <section id="low-memory-footprint">
+            <h2>Low Memory Footprint</h2>
+            <p class="highlight">
+                Built with embedded systems in mind, LTS uses static memory allocation to ensure predictable and efficient resource usage.
+            </p>
+            <ul>
+                <li><strong>Static Allocation:</strong> All memory is allocated at compile time, eliminating runtime overhead.</li>
+                <li><strong>Configurable Limits:</strong> Adjust the <code>MAX_TASKS</code> macro in <code>scheduler_config.h</code> to control memory usage.</li>
+                <li><strong>Optimized for Embedded Systems:</strong> Perfect for resource-constrained environments.</li>
+            </ul>
+            <p>
+                With its lightweight design, LTS is the ideal choice for applications where every byte of memory counts.
+            </p>
+        </section>
+        <section id="comparison">
+    <h2>How LTS Stands Out</h2>
+    <p class="highlight">
+        The Lightweight Task Scheduler (LTS) offers unique advantages compared to other task scheduling solutions, making it an excellent choice for embedded systems.
+    </p>
+    <ul>
+        <li><strong>Minimal Memory Usage:</strong> Unlike many general-purpose schedulers, LTS is designed with a static memory allocation model, ensuring predictable and low memory usage. This makes it ideal for microcontrollers with as little as 2 KB of RAM.</li>
+        <li><strong>C99 Compliance:</strong> LTS adheres to the ISO/IEC 9899:1999 (C99) standard, ensuring compatibility across a wide range of compilers and platforms, unlike proprietary or platform-specific solutions.</li>
+        <li><strong>Portability:</strong> While some schedulers are tightly coupled to specific operating systems (e.g., FreeRTOS for RTOS environments), LTS is platform-agnostic and can be easily integrated into bare-metal or custom environments.</li>
+        <li><strong>Lightweight Design:</strong> Compared to heavier solutions like FreeRTOS or Zephyr, LTS has a minimal codebase, reducing complexity and making it easier to audit and maintain.</li>
+        <li><strong>No Dynamic Memory Allocation:</strong> Many other schedulers rely on dynamic memory allocation, which can lead to fragmentation and unpredictable behavior. LTS avoids this entirely by using static allocation.</li>
+        <li><strong>Customizability:</strong> LTS allows developers to tailor the scheduler to their specific needs by adjusting configuration parameters like <code>MAX_TASKS</code>, providing flexibility without unnecessary overhead.</li>
+        <li><strong>Ease of Use:</strong> With a simple API and minimal setup requirements, LTS is easier to adopt compared to more complex frameworks that require extensive configuration.</li>
+    </ul>
+    <p>
+        These features make LTS a perfect fit for resource-constrained embedded systems, where efficiency, reliability, and simplicity are paramount. Whether you're working on a bare-metal microcontroller or a custom embedded platform, LTS provides the tools you need without the overhead of more complex solutions.
+    </p>
+</section>
+
+        <section id="license">
+            <h2>License</h2>
+            <p>This project is licensed under the MIT License. See the <a href="LICENSE">LICENSE</a> file for details.</p>
+        </section>
+        <section id="contributing">
+            <h2>Contributing</h2>
+            <p>Contributions are welcome! Feel free to open issues or submit pull requests to improve LTS.</p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Tobias Schwalm. Lightweight Task Scheduling built for embedded systems developers. <a href="https://github.com/tobiasschwalm/lightweight_task_scheduler">GitHub Repository</a></p>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script>
+        // Initialize Highlight.js
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        });
+
+        function restartAnimation(button) {
+            const consoleLines = button.closest('.console-simulation').querySelectorAll('.console-line');
+            consoleLines.forEach((line, index) => {
+                line.style.animation = 'none'; // Stop the animation
+                line.offsetHeight; // Trigger reflow to apply changes
+                line.style.animation = `fadeInConsole 6s forwards`; // Restart the animation
+                line.style.animationDelay = `${index * 0.5}s`; // Reset delay for sequential animations
+            });
+        }
+    </script>
+    <style>
+        .console-simulation {
+            width: 100%;
+            max-width: 700px;
+            margin: 2rem auto;
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .console-header {
+            background: #333;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            font-weight: bold;
+            border-bottom: 2px solid #007acc;
+        }
+        .console-body {
+            padding: 1rem;
+            height: auto; /* Adjust height to fit all lines */
+        }
+        .console-line {
+            opacity: 0;
+            animation: fadeInConsole 6s forwards; /* Ensure animation restarts properly */
+        }
+        @keyframes fadeInConsole {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+        .simulation-description {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+            margin-top: 1rem;
+        }
+        .restart-button {
+            float: right;
+            background: #007acc;
+            color: #fff;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .restart-button:hover {
+            background: #005fa3;
+        }
+    </style>
+</body>
+</html>
